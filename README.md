@@ -8,8 +8,8 @@ This application allows you to fetch vehicle details (Make, Model, and Year) usi
 1.  **Clone the Repository (Optional)**
     If you haven't already, clone the repository to your local machine:
     ```bash
-    git clone https://github.com/johne3x/vin-lookup-tool
-    cd vin-lookup-tool
+    git clone <repository_url>
+    cd <repository_directory>
     ```
 
 2.  **Create a Python Virtual Environment**

@@ -12,7 +12,7 @@ def get_vin_details(vin, api_key):
         api_key: The API key for API Ninjas (string).
 
     Returns:
-        A dictionary with make, model, and year, or an error message string.
+        A string containing all vehicle details formatted, or an error message string.
     """
     api_url = f"https://api.api-ninjas.com/v1/vinlookup?vin={vin}"
     headers = {'X-Api-Key': api_key}
@@ -31,20 +31,25 @@ def get_vin_details(vin, api_key):
         if not data: # Handles empty list or empty dict
             return "No data found for this VIN."
 
-        # API returns a list of matching VINs, even if it's just one.
-        # If it's a dictionary for some reason, or an empty list, handle that.
-        if isinstance(data, list) and data:
-            vehicle_info = data[0] # Assuming the first result is the most relevant
-        elif isinstance(data, dict) and data: # Fallback if API returns a single dict directly
-            vehicle_info = data
-        else: # Handles empty list or other unexpected non-empty but unusable data types
-            return "No data found for this VIN."
-
-        return {
-            'make': vehicle_info.get('make'),
-            'model': vehicle_info.get('model'),
-            'year': vehicle_info.get('year')
-        }
+        result_string = ""
+        if isinstance(data, list):
+            if not data: # Handles empty list
+                 return "No data found for this VIN."
+            for i, record in enumerate(data):
+                if len(data) > 1:
+                    result_string += f"--- Record {i+1} ---\n"
+                for key, value in record.items():
+                    result_string += f"{key.replace('_', ' ').title()}: {value}\n"
+        elif isinstance(data, dict):
+            if not data: # Handles empty dict
+                 return "No data found for this VIN."
+            for key, value in data.items():
+                result_string += f"{key.replace('_', ' ').title()}: {value}\n"
+        else:
+            # This case should ideally not be reached if API behaves as expected (list or dict)
+            return "Unexpected data format received from API."
+        
+        return result_string.strip() if result_string else "No data extracted from VIN."
 
     except requests.exceptions.RequestException as e:
         return f"Error: API request failed: {e}"
@@ -60,10 +65,7 @@ if __name__ == "__main__":
     else:
         vin_input = input("Enter VIN: ")
         if vin_input:
-            details = get_vin_details(vin_input, api_key)
-            if isinstance(details, dict):
-                print(f"Make: {details.get('make', 'N/A')}, Model: {details.get('model', 'N/A')}, Year: {details.get('year', 'N/A')}")
-            else:
-                print(details)
+            details_string = get_vin_details(vin_input, api_key)
+            print(details_string)
         else:
             print("No VIN entered.")
